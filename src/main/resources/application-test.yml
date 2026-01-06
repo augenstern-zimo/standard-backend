@@ -1,0 +1,155 @@
+# ============================================
+# 测试环境配置
+# ============================================
+server:
+  port: 8080
+
+spring:
+  # ============================================
+  # 数据源配置 - MySQL
+  # ============================================
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://test-mysql-server:3306/smart_learning_test?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=true&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
+    username: ${DB_USERNAME:smart_learning_user}
+    password: ${DB_PASSWORD:}
+    
+    # Hikari 连接池配置
+    hikari:
+      pool-name: SmartLearningHikariCP
+      minimum-idle: 10
+      maximum-pool-size: 30
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-test-query: SELECT 1
+
+  # ============================================
+  # Redis 配置
+  # ============================================
+  data:
+    redis:
+      host: ${REDIS_HOST:test-redis-server}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 0
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 30
+          max-wait: 5000ms
+          max-idle: 15
+          min-idle: 5
+        shutdown-timeout: 100ms
+
+  # ============================================
+  # RabbitMQ 配置
+  # ============================================
+  rabbitmq:
+    host: ${RABBITMQ_HOST:test-rabbitmq-server}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:smart_learning}
+    password: ${RABBITMQ_PASSWORD:}
+    virtual-host: /smart_learning_test
+    connection-timeout: 15000
+    
+    publisher-confirm-type: correlated
+    publisher-returns: true
+    
+    listener:
+      simple:
+        acknowledge-mode: manual
+        concurrency: 2
+        max-concurrency: 15
+        prefetch: 1
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 1000ms
+          multiplier: 2
+          max-interval: 10000ms
+    
+    template:
+      retry:
+        enabled: true
+        max-attempts: 3
+        initial-interval: 1000ms
+      receive-timeout: 5000ms
+      reply-timeout: 5000ms
+
+# ============================================
+# MinIO 对象存储配置
+# ============================================
+minio:
+  endpoint: ${MINIO_ENDPOINT:http://test-minio-server:9000}
+  console-endpoint: ${MINIO_CONSOLE_ENDPOINT:http://test-minio-server:9001}
+  access-key: ${MINIO_ACCESS_KEY:}
+  secret-key: ${MINIO_SECRET_KEY:}
+  bucket-name: smart-learning-test
+  secure: true
+  connect-timeout: 10
+  write-timeout: 60
+  read-timeout: 10
+
+# ============================================
+# 日志配置
+# ============================================
+logging:
+  level:
+    root: INFO
+    cloud.zimometaverse.backend: INFO
+    cloud.zimometaverse.backend.mapper: INFO
+    com.baomidou.mybatisplus: INFO
+  file:
+    name: logs/test/application.log
+    max-size: 100MB
+    max-history: 30
+
+# ============================================
+# 业务配置
+# ============================================
+business:
+  jwt:
+    # 使用环境变量配置密钥（更安全）
+    secret: ${JWT_SECRET:test-smart-learning-cloud-sail-jwt-secret-key-2026}
+    expiration: 604800
+    token-prefix: Bearer
+    token-header: Authorization
+  
+  file:
+    allowed-types:
+      - image/jpeg
+      - image/png
+      - image/gif
+      - application/pdf
+      - application/msword
+      - application/vnd.openxmlformats-officedocument.wordprocessingml.document
+    max-size: 10485760
+    path-prefix: test
+  
+  cors:
+    allowed-origins:
+      - https://test.zimometaverse.cloud
+    allowed-methods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - OPTIONS
+    allowed-headers:
+      - "*"
+    allow-credentials: true
+    max-age: 3600
+
+# ============================================
+# Actuator 监控配置
+# ============================================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+

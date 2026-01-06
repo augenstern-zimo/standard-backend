@@ -1,0 +1,221 @@
+# ============================================
+# 生产环境配置
+# ============================================
+server:
+  port: 8080
+  # 生产环境 Tomcat 优化
+  tomcat:
+    threads:
+      max: 300
+      min-spare: 20
+    max-connections: 10000
+    accept-count: 200
+
+spring:
+  # ============================================
+  # 数据源配置 - MySQL
+  # ============================================
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # 生产环境必须使用环境变量配置敏感信息
+    url: jdbc:mysql://${DB_HOST:prod-mysql-server}:${DB_PORT:3306}/${DB_NAME:smart_learning_prod}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=true&allowPublicKeyRetrieval=false&rewriteBatchedStatements=true
+    username: ${DB_USERNAME:}
+    password: ${DB_PASSWORD:}
+    
+    # Hikari 连接池配置（生产环境优化）
+    hikari:
+      pool-name: SmartLearningHikariCP-Prod
+      minimum-idle: 20
+      maximum-pool-size: 50
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-test-query: SELECT 1
+      # 连接泄漏检测（超过此时间未关闭则告警）
+      leak-detection-threshold: 60000
+
+  # ============================================
+  # Redis 配置
+  # ============================================
+  data:
+    redis:
+      host: ${REDIS_HOST:}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DATABASE:0}
+      timeout: 5000ms
+      # 生产环境使用 SSL
+      ssl:
+        enabled: ${REDIS_SSL_ENABLED:true}
+      lettuce:
+        pool:
+          max-active: 50
+          max-wait: 5000ms
+          max-idle: 20
+          min-idle: 10
+        shutdown-timeout: 100ms
+        # 集群配置（如使用 Redis 集群）
+        cluster:
+          refresh:
+            # 支持集群拓扑动态刷新
+            adaptive: true
+            # 定时刷新周期
+            period: 30s
+
+  # ============================================
+  # RabbitMQ 配置
+  # ============================================
+  rabbitmq:
+    host: ${RABBITMQ_HOST:}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:}
+    password: ${RABBITMQ_PASSWORD:}
+    virtual-host: ${RABBITMQ_VHOST:/smart_learning_prod}
+    connection-timeout: 15000
+    
+    # 生产环境启用 SSL
+    ssl:
+      enabled: ${RABBITMQ_SSL_ENABLED:true}
+    
+    publisher-confirm-type: correlated
+    publisher-returns: true
+    
+    listener:
+      simple:
+        acknowledge-mode: manual
+        concurrency: 5
+        max-concurrency: 20
+        prefetch: 1
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 2000ms
+          multiplier: 2
+          max-interval: 30000ms
+    
+    template:
+      retry:
+        enabled: true
+        max-attempts: 3
+        initial-interval: 2000ms
+      receive-timeout: 10000ms
+      reply-timeout: 10000ms
+
+# ============================================
+# MinIO 对象存储配置
+# ============================================
+minio:
+  endpoint: ${MINIO_ENDPOINT:}
+  console-endpoint: ${MINIO_CONSOLE_ENDPOINT:}
+  access-key: ${MINIO_ACCESS_KEY:}
+  secret-key: ${MINIO_SECRET_KEY:}
+  bucket-name: ${MINIO_BUCKET:smart-learning-prod}
+  # 生产环境必须使用 HTTPS
+  secure: true
+  connect-timeout: 10
+  write-timeout: 120
+  read-timeout: 30
+
+# ============================================
+# 日志配置
+# ============================================
+logging:
+  level:
+    root: WARN
+    cloud.zimometaverse.backend: INFO
+    # 生产环境关闭 SQL 日志
+    cloud.zimometaverse.backend.mapper: WARN
+    com.baomidou.mybatisplus: WARN
+  file:
+    name: /data/logs/smart-learning/application.log
+    max-size: 200MB
+    max-history: 60
+  # 日志归档压缩
+  logback:
+    rollingpolicy:
+      # 按日期和大小滚动
+      file-name-pattern: /data/logs/smart-learning/application-%d{yyyy-MM-dd}.%i.log.gz
+      max-file-size: 200MB
+      max-history: 60
+      total-size-cap: 20GB
+
+# ============================================
+# MyBatis-Plus 配置
+# ============================================
+mybatis-plus:
+  configuration:
+    # 生产环境关闭 SQL 日志
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+
+# ============================================
+# 业务配置
+# ============================================
+business:
+  jwt:
+    # 生产环境必须使用强密钥，且通过环境变量配置
+    secret: ${JWT_SECRET:}
+    # Token 有效期（3天）
+    expiration: 259200
+    token-prefix: Bearer
+    token-header: Authorization
+  
+  file:
+    allowed-types:
+      - image/jpeg
+      - image/png
+      - image/gif
+      - application/pdf
+      - application/msword
+      - application/vnd.openxmlformats-officedocument.wordprocessingml.document
+      - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+    # 生产环境限制为 20MB
+    max-size: 20971520
+    path-prefix: prod
+  
+  cors:
+    # 生产环境明确指定允许的域名
+    allowed-origins:
+      - ${FRONTEND_URL:https://www.zimometaverse.cloud}
+    allowed-methods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - OPTIONS
+    allowed-headers:
+      - Authorization
+      - Content-Type
+      - Accept
+    allow-credentials: true
+    max-age: 3600
+
+# ============================================
+# Actuator 监控配置
+# ============================================
+management:
+  endpoints:
+    web:
+      exposure:
+        # 生产环境只暴露必要的端点
+        include: health,metrics,prometheus
+  endpoint:
+    health:
+      # 生产环境不显示详细信息（安全考虑）
+      show-details: never
+  metrics:
+    export:
+      # 如果使用 Prometheus 监控
+      prometheus:
+        enabled: true
+  # 健康检查配置
+  health:
+    redis:
+      enabled: true
+    rabbitmq:
+      enabled: true
+    diskspace:
+      enabled: true
+      # 磁盘空间阈值（字节）
+      threshold: 10GB
+
+

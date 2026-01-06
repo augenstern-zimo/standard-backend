@@ -1,0 +1,215 @@
+# ============================================
+# 开发环境配置
+# ============================================
+server:
+  port: 8080
+
+spring:
+  # ============================================
+  # 数据源配置 - MySQL
+  # ============================================
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://101.35.31.179:3306/management_system?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
+    username: management_system
+    password: sEJZsPexEhEZKw2K
+    
+    # Hikari 连接池配置
+    hikari:
+      # 连接池名称
+      pool-name: SmartLearningHikariCP
+      # 最小空闲连接数
+      minimum-idle: 5
+      # 最大连接数
+      maximum-pool-size: 20
+      # 连接超时时间（毫秒）
+      connection-timeout: 30000
+      # 空闲连接存活最大时间（毫秒）
+      idle-timeout: 600000
+      # 连接最大存活时间（毫秒）
+      max-lifetime: 1800000
+      # 连接测试查询
+      connection-test-query: SELECT 1
+
+  # ============================================
+  # Redis 配置
+  # ============================================
+  data:
+    redis:
+      # 主机地址
+      host: 101.35.31.179
+      # 端口
+      port: 6379
+      # 密码（如无密码则留空）
+      password: dWtBw6pAkyiW7SXx
+      # 数据库索引（0-15）
+      database: 10
+      # 连接超时时间
+      timeout: 5000ms
+      # Lettuce 连接池配置
+      lettuce:
+        pool:
+          # 最大连接数
+          max-active: 20
+          # 最大阻塞等待时间
+          max-wait: 5000ms
+          # 最大空闲连接
+          max-idle: 10
+          # 最小空闲连接
+          min-idle: 2
+        # 关闭超时时间
+        shutdown-timeout: 100ms
+
+  # ============================================
+  # RabbitMQ 配置
+  # ============================================
+  rabbitmq:
+    # 主机地址
+    host: 101.35.31.179
+    # 端口
+    port: 5672
+    # 用户名
+    username: rabbitmq
+    # 密码
+    password: cZxSCtWTTSehHp73
+    # 虚拟主机
+    virtual-host: /
+    # 连接超时时间
+    connection-timeout: 15000
+    
+    # 发布者确认配置
+    publisher-confirm-type: correlated
+    # 发布者返回配置
+    publisher-returns: true
+    
+    # 消费者配置
+    listener:
+      simple:
+        # 手动确认消息
+        acknowledge-mode: manual
+        # 并发消费者数量
+        concurrency: 1
+        # 最大并发消费者数量
+        max-concurrency: 10
+        # 每次从队列中取的消息数
+        prefetch: 1
+        # 是否支持重试
+        retry:
+          enabled: true
+          # 最大重试次数
+          max-attempts: 3
+          # 初始重试间隔
+          initial-interval: 1000ms
+          # 重试间隔倍数
+          multiplier: 2
+          # 最大重试间隔
+          max-interval: 10000ms
+    
+    # 模板配置
+    template:
+      # 消息发送失败时是否重试
+      retry:
+        enabled: true
+        max-attempts: 3
+        initial-interval: 1000ms
+      # 消息发送超时时间
+      receive-timeout: 5000ms
+      # 消息确认超时时间
+      reply-timeout: 5000ms
+
+# ============================================
+# MinIO 对象存储配置
+# ============================================
+minio:
+  # 服务地址
+  endpoint: http://101.35.31.179:9000
+  # 控制台地址
+  console-endpoint: http://101.35.31.179:9001
+  # Access Key
+  access-key: xdatROgMywOuatdUqApZ
+  # Secret Key
+  secret-key: tfJpNzjKKCAMNpcv5OalCXND6H3MV0wqQHSfpf5C
+  # 默认存储桶
+  bucket-name: management_system
+  # 是否使用 SSL
+  secure: false
+  # 连接超时时间（秒）
+  connect-timeout: 10
+  # 写超时时间（秒）
+  write-timeout: 60
+  # 读超时时间（秒）
+  read-timeout: 10
+
+# ============================================
+# 日志配置
+# ============================================
+logging:
+  level:
+    root: INFO
+    cloud.zimometaverse.backend: DEBUG
+    # SQL 日志（开发环境开启）
+    cloud.zimometaverse.backend.mapper: DEBUG
+    # 显示 MyBatis 执行的 SQL
+    com.baomidou.mybatisplus: DEBUG
+  file:
+    name: logs/dev/application.log
+
+# ============================================
+# MyBatis-Plus 配置
+# ============================================
+mybatis-plus:
+  configuration:
+    # 开发环境打印 SQL
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# ============================================
+# 业务配置
+# ============================================
+business:
+  # JWT 配置
+  jwt:
+    # 密钥（生产环境必须修改）
+    secret: dev-smart-learning-cloud-sail-jwt-secret-key-2026
+    # 过期时间（秒，7天）
+    expiration: 604800
+    # Token 前缀
+    token-prefix: Bearer
+    # Token Header 名称
+    token-header: Authorization
+  
+  # 文件上传配置
+  file:
+    # 允许的文件类型
+    allowed-types:
+      - image/jpeg
+      - image/png
+      - image/gif
+      - application/pdf
+      - application/msword
+      - application/vnd.openxmlformats-officedocument.wordprocessingml.document
+    # 单文件最大大小（字节，默认 10MB）
+    max-size: 10485760
+    # 文件存储路径前缀
+    path-prefix: dev
+  
+  # 跨域配置
+  cors:
+    # 允许的源
+    allowed-origins:
+      - http://localhost:3000
+      - http://localhost:5173
+    # 允许的方法
+    allowed-methods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - OPTIONS
+    # 允许的头
+    allowed-headers:
+      - "*"
+    # 是否允许携带凭证
+    allow-credentials: true
+    # 预检请求有效期（秒）
+    max-age: 3600
+

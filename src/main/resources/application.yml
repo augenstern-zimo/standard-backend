@@ -1,0 +1,156 @@
+# ============================================
+# 智能学习云帆平台 - 主配置文件
+# ============================================
+spring:
+  profiles:
+    # 默认激活开发环境
+    active: @spring.profiles.active@
+  
+  # 应用基础配置
+  application:
+    name: smart-learning-cloud-sail
+  
+  # Jackson 序列化配置
+  jackson:
+    # 时区设置
+    time-zone: GMT+8
+    # 日期格式
+    date-format: yyyy-MM-dd HH:mm:ss
+    # 序列化配置
+    serialization:
+      # 格式化输出
+      indent-output: false
+      # 忽略无法转换的对象
+      fail-on-empty-beans: false
+      # 日期序列化为时间戳
+      write-dates-as-timestamps: false
+    # 反序列化配置
+    deserialization:
+      # 忽略未知属性
+      fail-on-unknown-properties: false
+    # 默认属性包含策略：非空
+    default-property-inclusion: non_null
+
+# ============================================
+# MyBatis-Plus 全局配置
+# ============================================
+mybatis-plus:
+  # Mapper XML 文件位置
+  mapper-locations: classpath*:/mapper/**/*.xml
+  # 实体类扫描包
+  type-aliases-package: cloud.zimometaverse.backend.domain.entity
+  
+  # 全局配置
+  global-config:
+    # 关闭 Banner
+    banner: false
+    db-config:
+      # 主键类型（使用雪花算法）
+      id-type: ASSIGN_ID
+      # 逻辑删除字段
+      logic-delete-field: deleted
+      # 逻辑删除值
+      logic-delete-value: 1
+      # 逻辑未删除值
+      logic-not-delete-value: 0
+      # 字段验证策略：非空验证
+      insert-strategy: NOT_EMPTY
+      update-strategy: NOT_EMPTY
+      select-strategy: NOT_EMPTY
+  
+  # 配置项
+  configuration:
+    # 开启驼峰命名转换
+    map-underscore-to-camel-case: true
+    # 开启二级缓存
+    cache-enabled: false
+    # 延迟加载全局开关
+    lazy-loading-enabled: false
+    # 当设置为 true 时，延迟加载的对象可能包含基本类型
+    aggressive-lazy-loading: false
+    # 允许 JDBC 支持自动生成主键
+    use-generated-keys: true
+    # 日志实现（开发环境使用，生产环境建议关闭）
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+# ============================================
+# Spring Boot Actuator 监控配置
+# ============================================
+management:
+  endpoints:
+    web:
+      exposure:
+        # 暴露的端点（生产环境建议按需暴露）
+        include: health,info,metrics,prometheus
+      # 基础路径
+      base-path: /actuator
+  endpoint:
+    health:
+      # 显示详细健康信息
+      show-details: when-authorized
+  # 健康检查配置
+  health:
+    # Redis 健康检查
+    redis:
+      enabled: true
+    # RabbitMQ 健康检查
+    rabbitmq:
+      enabled: true
+    # 磁盘空间检查
+    diskspace:
+      enabled: true
+
+# ============================================
+# 日志配置
+# ============================================
+logging:
+  # 日志级别
+  level:
+    root: INFO
+    cloud.zimometaverse.backend: INFO
+    # MyBatis 日志
+    com.baomidou.mybatisplus: INFO
+    # SQL 日志（开发环境可设置为 DEBUG）
+    cloud.zimometaverse.backend.mapper: INFO
+  # 日志输出格式
+  pattern:
+    console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p ${PID:- } --- [%t] %-40.40logger{39} : %m%n%wEx"
+  # 日志文件配置（在各环境配置中具体指定）
+  file:
+    name: logs/application.log
+    # 日志文件最大大小
+    max-size: 100MB
+    # 日志文件保留天数
+    max-history: 30
+
+# ============================================
+# 服务器配置
+# ============================================
+server:
+  # 端口（在各环境配置中指定）
+  port: 8080
+  # Servlet 配置
+  servlet:
+    # 上下文路径
+    context-path: /api
+    # 编码配置
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  # Tomcat 配置
+  tomcat:
+    # URI 编码
+    uri-encoding: UTF-8
+    # 最大线程数
+    threads:
+      max: 200
+      min-spare: 10
+    # 最大连接数
+    max-connections: 8192
+    # 接受队列长度
+    accept-count: 100
+    # 连接超时时间
+    connection-timeout: 20000ms
+
