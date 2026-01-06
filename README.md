@@ -308,7 +308,7 @@ curl http://localhost:8080/api/actuator/health/details
 
 ## 👥 团队
 
-- **开发团队**：智能学习云帆平台开发组
+- **开发团队**：zimo
 - **联系方式**：dev@zimometaverse.cloud
 
 ## 📄 License
